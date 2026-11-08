@@ -59,6 +59,7 @@ struct World {
     return false;
   }
   bool rect_hits(double x, double y, double th) { checks++;
+    if (clearance(x, y) >= std::hypot(a, b) + margin + res) return false;   // circumscribed circle is free: no exact test needed
     double ca = std::cos(th), sa = std::sin(th), A = a + margin, B = b + margin;
     double vx[4], vy[4]; const double sx[4] = {1, 1, -1, -1}, sy[4] = {1, -1, -1, 1};
     for (int k = 0; k < 4; k++) { vx[k] = x + sx[k] * A * ca - sy[k] * B * sa; vy[k] = y + sx[k] * A * sa + sy[k] * B * ca; }
@@ -72,15 +73,16 @@ struct World {
       double t0 = (double)p / pieces, t1 = (double)(p + 1) / pieces;
       double ax = x0 + (x1 - x0) * t0, ay = y0 + (y1 - y0) * t0, bx = x0 + (x1 - x0) * t1, by = y0 + (y1 - y0) * t1;
       checks++;
+      if (clearance(0.5 * (ax + bx), 0.5 * (ay + by)) >= std::hypot(a, b) + margin + 0.5 * std::hypot(bx - ax, by - ay) + res) continue;   // whole piece clear of obstacles
       double ca = std::cos(th), sa = std::sin(th), A = a + margin, B = b + margin;
       double px[8], py[8]; int m = 0; const double sx[4] = {1, 1, -1, -1}, sy[4] = {1, -1, -1, 1};
       for (int k = 0; k < 4; k++) { double ox = sx[k] * A * ca - sy[k] * B * sa, oy = sx[k] * A * sa + sy[k] * B * ca;
         px[m] = ax + ox; py[m++] = ay + oy; px[m] = bx + ox; py[m++] = by + oy; }
       // convex hull (monotone chain)
-      std::vector<int> id(m); for (int k = 0; k < m; k++) id[k] = k;
-      std::sort(id.begin(), id.end(), [&](int u, int v) { return px[u] < px[v] || (px[u] == px[v] && py[u] < py[v]); });
+      int id[8]; for (int k = 0; k < m; k++) id[k] = k;
+      std::sort(id, id + m, [&](int u, int v) { return px[u] < px[v] || (px[u] == px[v] && py[u] < py[v]); });
       auto cr = [&](int o, int u, int v) { return (px[u] - px[o]) * (py[v] - py[o]) - (py[u] - py[o]) * (px[v] - px[o]); };
-      std::vector<int> h(2 * m); int k = 0;
+      int h[16]; int k = 0;
       for (int q = 0; q < m; q++) { while (k >= 2 && cr(h[k - 2], h[k - 1], id[q]) <= 1e-12) k--; h[k++] = id[q]; }
       for (int q = m - 2, t = k + 1; q >= 0; q--) { while (k >= t && cr(h[k - 2], h[k - 1], id[q]) <= 1e-12) k--; h[k++] = id[q]; }
       k--; double hx[16], hy[16]; for (int q = 0; q < k && q < 16; q++) { hx[q] = px[h[q]]; hy[q] = py[h[q]]; }

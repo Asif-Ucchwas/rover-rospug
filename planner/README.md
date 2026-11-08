@@ -1,6 +1,6 @@
 # fpp: footprint-aware planning core (simulation only, stage 3 of the Rover + ROSPug syllabus)
 
-ROS-free C++17 library (plain C API) plus a Python harness. Robot: 1100 x 770 mm rectangle (MEGA).
+ROS-free C++17 library (plain C API) plus a Python harness. Robot: 1120 x 810 mm (measured) rectangle (MEGA).
 
 Build: `g++ -O2 -std=c++17 -shared -fPIC src/fpp.cpp -o libfpp.so`
 

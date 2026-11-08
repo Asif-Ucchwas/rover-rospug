@@ -5,7 +5,7 @@ Purpose: one page that says what the planner must do, so tests can say pass or f
 ## 1. Robot
 | Item | Value | Source |
 |---|---|---|
-| Footprint | rectangle 1100 x 770 mm, centered on the planning point | your notes |
+| Footprint | rectangle 1120 x 810 mm (measured), centered on the planning point | your notes |
 | Drive | skid-steer, can rotate in place | (find out: confirm on the real rover) |
 | Max speed, max turn rate | (find out) | |
 | Where the planning point sits on the body | footprint center | you confirmed |
@@ -26,16 +26,16 @@ Purpose: one page that says what the planner must do, so tests can say pass or f
 |---|---|---|
 | Collision checker vs brute force, 10,000 poses | 0 missed collisions | passed (simulation) |
 | Every returned path, validated on the true footprint at 5 mm and 0.25 degrees | 0 collisions | passed on 80 corridor trips |
-| Door gaps | finds a path through gaps of 0.85 m and wider (rover width 0.77 m); proposed target 0.80 m | 0.80 m found in the gap sweep |
-| Success rate on reachable trips (corridor world) | proposed at least 85% | 51 of 60 = 85% |
-| Latency, 20 m route | proposed under 100 ms median on the rover computer | not met: about 0.4 s on the cloud machine |
-| Same input, same output | identical path on repeat runs | (to test) |
+| Door gaps | finds a path through gaps of 0.85 m and wider (rover width 0.81 m); gaps of 0.80 m and narrower are correctly blocked, 0.85 m passes with the 2 cm margin | passed (gap sweep, 0.70 to 1.50 m) |
+| Success rate on reachable trips (corridor world, 0.81 m width) | proposed at least 85% | 51 of 56 = 91% |
+| Latency, 80 corridor queries | proposed under 100 ms median on the rover computer | cloud machine: median 101 ms (was 150 ms), slowest 5 s on unreachable goals; rover computer not yet measured |
+| Same input, same output | identical path on repeat runs | passed (unit test, also after a failed query in between) |
 
 ## 5. Motion
 Forward, reverse and turning in place. Reverse has a cost penalty so the planner prefers forward when it is about equal. Other motion models (for example car-like vehicles) are for later and are not part of this spec.
 
 ## 6. Not in scope yet
-Moving people, doors that open and close, speed or acceleration limits, a costmap cost beyond blocked or free (task 3.4), the Nav2 plugin interface (3.7).
+Doors that open and close, the real speed and acceleration limits (moving people and speed control: see DYNAMIC.md), a costmap cost beyond blocked or free (task 3.4), the Nav2 plugin interface (3.7).
 
 ## 7. Open questions for you
 1. (answered: footprint center.)

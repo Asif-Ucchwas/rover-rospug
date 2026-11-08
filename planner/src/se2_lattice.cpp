@@ -23,7 +23,11 @@ bool plan_se2(World& w, double sx, double sy, double sth, double gx, double gy, 
   auto H0 = [&](double x, double y) { int i = (int)(x / w.res), j = (int)(y / w.res); if (i < 0 || j < 0 || i >= W || j >= H) return 1e30f; return hf[j * W + i]; };
   struct Node { double x, y, th; float g; int par; int it; };
   std::vector<Node> nodes; nodes.reserve(1 << 16);
-  std::vector<int> best((size_t)W2 * H2 * NT, -1); std::vector<uint8_t> closed;
+  // best-node table is reused across calls (only the touched entries are reset), so a query does not pay to clear tens of MB
+  static thread_local std::vector<int> best_buf; if (best_buf.size() != (size_t)W2 * H2 * NT) best_buf.assign((size_t)W2 * H2 * NT, -1);
+  std::vector<int>& best = best_buf; std::vector<uint8_t> closed;
+  std::vector<size_t> touched; touched.reserve(1 << 16);
+  struct Reset { std::vector<int>& b; std::vector<size_t>& t; ~Reset() { for (size_t k : t) b[k] = -1; } } reset_guard{best, touched};
   auto key = [&](double x, double y, int it) { int i = (int)(x / rs), j = (int)(y / rs); if (i < 0 || j < 0 || i >= W2 || j >= H2) return (size_t)-1; return ((size_t)j * W2 + i) * NT + it; };
   auto bin = [&](double th) { int it = (int)std::lround(wrap(th) / (2 * PI / NT)); it %= NT; if (it < 0) it += NT; return it; };
   if (H0(sx, sy) > 1e29f) return false;
@@ -32,7 +36,7 @@ bool plan_se2(World& w, double sx, double sy, double sth, double gx, double gy, 
   if (w.rect_hits(sx, sy, th0)) { // start heading bin collides: try all bins
     bool found = false; for (int q = 0; q < NT && !found; q++) if (!w.rect_hits(sx, sy, q * (2 * PI / NT))) { it0 = q; th0 = q * (2 * PI / NT); found = true; }
     if (!found) return false; }
-  nodes.push_back({sx, sy, th0, 0.f, -1, it0}); closed.push_back(0); best[key(sx, sy, it0)] = 0; pq.push({H0(sx, sy), 0});
+  nodes.push_back({sx, sy, th0, 0.f, -1, it0}); closed.push_back(0); best[key(sx, sy, it0)] = 0; touched.push_back(key(sx, sy, it0)); pq.push({H0(sx, sy), 0});
   int goal_node = -1; double dth = 2 * PI / NT;
   while (!pq.empty()) {
     if ((long)st.expanded % 256 == 0 && since(t0) > tlim) break; if (st.expanded > maxn) break;
@@ -53,7 +57,7 @@ bool plan_se2(World& w, double sx, double sy, double sth, double gx, double gy, 
       else if (w.sweep_hits(cur.x, cur.y, A.x, A.y, cur.th)) continue;
       size_t kk = key(A.x, A.y, A.it); if (kk == (size_t)-1) continue; float ng = cur.g + (float)A.c; int bi = best[kk];
       if (bi >= 0 && nodes[bi].g <= ng) continue;
-      nodes.push_back({A.x, A.y, A.th, ng, k, A.it}); closed.push_back(0); int id = (int)nodes.size() - 1; best[kk] = id;
+      nodes.push_back({A.x, A.y, A.th, ng, k, A.it}); closed.push_back(0); int id = (int)nodes.size() - 1; best[kk] = id; touched.push_back(kk);
       float h = H0(A.x, A.y); if (h > 1e29f) continue; pq.push({ng + h, id});
     }
   }

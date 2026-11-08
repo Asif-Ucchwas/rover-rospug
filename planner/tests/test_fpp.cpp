@@ -16,7 +16,7 @@ int fpp_plan(void*, int, int, double, double, double, double, double, double, co
 }
 
 namespace {
-const double RES = 0.05, A = 0.55, B = 0.385;
+const double RES = 0.05, A = 0.56, B = 0.405;
 const int W = 400, H = 200;
 const double PRM[14] = {0.05, 32, 0.20, 0.5, 1.5, 0.15, 3e6, 30.0, 0.0, 2000, 2.0, 2.0, 0.05, 1};
 
@@ -45,13 +45,13 @@ TEST(Collision, FreeSpaceAndWall) {
   Fix f(1.5);
   EXPECT_EQ(fpp_rect_hits(f.p, 5.0, 5.0, 0.3), 0);
   EXPECT_EQ(fpp_rect_hits(f.p, 10.0, 1.0, 0.0), 1);          // inside the wall
-  EXPECT_EQ(fpp_rect_hits(f.p, 0.3, 5.0, 0.0), 1);           // body overlaps outer wall (a = 0.55 m)
+  EXPECT_EQ(fpp_rect_hits(f.p, 0.3, 5.0, 0.0), 1);           // body overlaps outer wall (a = 0.56 m)
 }
 TEST(Collision, RectangleOrientationMatters) {
   Fix f(1.5, 0.0);
-  // Next to the x=10 wall at y=2: long axis (1.1 m) along x pokes 0.55 m forward, along y only 0.385 m.
+  // Next to the x=10 wall at y=2: long axis (1.12 m) along x pokes 0.56 m forward, along y only 0.405 m.
   EXPECT_EQ(fpp_rect_hits(f.p, 9.40, 2.0, 0.0), 1);            // x-extent reaches 9.95+ -> hits wall at 9.9
-  EXPECT_EQ(fpp_rect_hits(f.p, 9.40, 2.0, M_PI / 2), 0);       // x-extent 0.385 -> clear
+  EXPECT_EQ(fpp_rect_hits(f.p, 9.40, 2.0, M_PI / 2), 0);       // x-extent 0.405 -> clear
 }
 TEST(Collision, SweepCatchesThinWallBetweenEndpoints) {
   Fix f(1.5);
@@ -73,8 +73,26 @@ TEST(Plan, SE2PassesDoorAndValidates) {
   EXPECT_NEAR(out[3 * (n - 1)], 17.0, 0.25);
 }
 TEST(Plan, DoorNarrowerThanBodyIsRejected) {
-  Fix f(0.6); std::vector<double> out; double st[4];            // robot width is 0.77 m
+  Fix f(0.6); std::vector<double> out; double st[4];            // robot width is 0.81 m
   EXPECT_LT(plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, out, st), 0);
+}
+TEST(Plan, DoorGapsAgainstMeasuredWidth) {
+  std::vector<double> out; double st[4];
+  { Fix f(0.80); EXPECT_LT(plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, out, st), 0); }   // 0.80 m < 0.81 m body
+  { Fix f(1.32); EXPECT_GT(plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, out, st), 0); }   // lab door, both leaves open
+}
+TEST(Plan, SameInputGivesIdenticalPath) {
+  Fix f(1.2); std::vector<double> o1, o2; double st[4];
+  int n1 = plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, o1, st), n2 = plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, o2, st);
+  ASSERT_GT(n1, 0); ASSERT_EQ(n1, n2);
+  for (int k = 0; k < 3 * n1; k++) EXPECT_EQ(o1[k], o2[k]);
+}
+TEST(Plan, ReusedLatticeTableDoesNotLeakBetweenQueries) {   // a failed query must not change the next answer
+  Fix f(1.2); std::vector<double> o1, o2, o3; double st[4];
+  int n1 = plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, o1, st);
+  plan(f, 3, 3.0, 5.0, 0.0, 5.0, 5.0, o3, st);    // goal inside a wall: fails
+  int n2 = plan(f, 3, 3.0, 5.0, 0.0, 17.0, 5.0, o2, st);
+  ASSERT_EQ(n1, n2); for (int k = 0; k < 3 * n1; k++) EXPECT_EQ(o1[k], o2[k]);
 }
 TEST(Plan, RotatesInPlaceWhenNeeded) {
   Fix f(1.2); std::vector<double> out; double st[4];

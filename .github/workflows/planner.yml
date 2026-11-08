@@ -1,0 +1,26 @@
+name: planner
+on:
+  push:
+    paths: ['planner/**', '.github/workflows/planner.yml']
+  pull_request:
+    paths: ['planner/**']
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and run C++ tests
+        working-directory: planner
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j2
+          ctest --test-dir build --output-on-failure
+      - name: Python harness agrees with the C++ core
+        working-directory: planner
+        run: |
+          python3 -m pip install numpy
+          for d in 0.12 0.002 0.0005; do python3 py/test_collision.py $d; done
+      - name: Door-gap sweep (prints the table)
+        working-directory: planner
+        run: |
+          python3 py/exp_gap.py | tee gap.out
