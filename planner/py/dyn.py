@@ -104,7 +104,11 @@ class Governor:
             lim = max(lim, min(s.creep, s.speed_limit(d2)))
             if lim > 0 and d1 < s.buf + 0.05: d1 = s.buf + 0.06
         return lim, d1
-    def free_distance(s, segs, k, x, y, th, v, tracks, look=7.0):
+    def free_distance(s, segs, k, x, y, th, v, tracks, look=7.0, keepout=None):
+        if keepout is not None:
+            old = s.ko; s.ko = keepout
+            try: return s.free_distance(segs, k, x, y, th, v, tracks, look)
+            finally: s.ko = old
         """travel distance along the remaining path before the footprint (+margin) would meet a predicted person. inf if clear."""
         a, b = s.p['a'] + s.margin, s.p['b'] + s.margin; vref = max(v, 0.4); acc = 0.0; tt = 0.0
         def hit(px, py, pth, tt):
@@ -174,8 +178,10 @@ def paint(occ, res, tracks, extra):
                 if math.hypot((i + .5) * res - t['x'], (j + .5) * res - t['y']) <= R: o[j, i] = 1
     return o
 
-def run_episode(occ, res, path, goal, peds, prof='rover', t_max=150.0, seed=0, t_wait=4.0, t_giveup=40.0, spawn=None, log=False):
-    P = PROFILES[prof]; gov = Governor(P); lid = Lidar(occ, res, seed=seed); trk = Tracker(occ, res)
+def run_episode(occ, res, path, goal, peds, prof='rover', t_max=150.0, seed=0, t_wait=4.0, t_giveup=40.0, spawn=None, log=False, impl='py'):
+    P = PROFILES[prof]; lid = Lidar(occ, res, seed=seed)
+    if impl == 'cpp': import dyn_cpp; gov = dyn_cpp.Governor(P); trk = dyn_cpp.Tracker(occ, res)
+    else: gov = Governor(P); trk = Tracker(occ, res)
     truth = Planner(occ, res, margin=0.0); truth.a, truth.b = P['a'], P['b']
     x, y, th = map(float, path[0]); v = 0.0; w = 0.0; segs = segments(path); k = 0; t = 0.0
     out = dict(collisions=0, coll_moving=0, min_gap=9.0, stops=0, replans=0, replan_fail=0, status='timeout', t=0.0, dist=0.0, max_v_near=0.0, emerg=0, trace=[])
@@ -227,7 +233,7 @@ def run_episode(occ, res, path, goal, peds, prof='rover', t_max=150.0, seed=0, t
                 o2 = paint(occ, res, tracks, extra); pl = Planner(o2, res, margin=0.02); pl.a, pl.b = P['a'], P['b']
                 r = pl.plan('se2', (x, y, th), (gx, gy), tight=True)
                 if r['ok'] and pl.validate(r['path']) == 0:
-                    gov.ko = gov.keepout_min; df = gov.free_distance(segments(r['path']), 0, x, y, th, 0.0, tracks, look=60.0); gov.ko = gov.keepout   # the governor must accept the detour too
+                    df = gov.free_distance(segments(r['path']), 0, x, y, th, 0.0, tracks, look=60.0, keepout=gov.keepout_min)   # the governor must accept the detour too
                     if df == float('inf'): break
                 r = dict(ok=False)
             if r['ok']: segs = segments(r['path']); k = 0; out['replans'] += 1; t += r['secs']; mark_t, mark_dist, mark_k = t, out['dist'], 0

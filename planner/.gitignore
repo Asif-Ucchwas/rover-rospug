@@ -2,4 +2,4 @@ build/
 __pycache__/
 *.pyc
 *.mp4
-planner/tour.log
+tour.log

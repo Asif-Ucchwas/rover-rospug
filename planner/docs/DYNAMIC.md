@@ -27,3 +27,9 @@ All speeds and decelerations are placeholders (rover: 0.8 m/s, 1.0 / 2.0 m/s^2 b
 - Lidar only sees one plane. Low or overhanging obstacles, glass and black surfaces need the RealSense (not used yet).
 - Constant-velocity prediction. People who stop or turn suddenly are handled by the stopping distance, not by prediction.
 - The stack is Python in a 2D kinematic simulator: no wheel slip, no latency jitter. Gazebo and then the real rover come later.
+
+## C++ port (Nov 8)
+`include/fpp/dynamic.hpp`, `src/dynamic.cpp`, `src/dynamic_c_api.cpp`: the Tracker and the Governor, ROS-free, same logic as `py/dyn.py`.
+- `tests/test_dynamic.cpp`: 9 unit tests (clear path, person beside the path, stopping distance always fits inside the free distance, person right in front, crossing walker is predicted, creep past a person, turn blocked by a person, tracker finds a standing person, walls alone are not people). Runs in CI.
+- `py/test_dyn_cpp.py`: 3000 random scenes (worst difference between C++ and Python 2e-16) and 4 full simulated drives with walkers (same outcome, same time, same stops). Run by hand: `python3 py/test_dyn_cpp.py` (needs `results_corridor.json` from `py/exp_corridor.py`).
+- Governor decision: about 0.08 ms in Python, 0.012 ms through the C++ library. Either is far below one control step (50 ms); the C++ version is what the Nav2 plugin will call.
