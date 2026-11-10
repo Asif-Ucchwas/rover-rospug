@@ -39,6 +39,20 @@
           <range><min>0.1</min><max>20</max><resolution>0.01</resolution></range>
         </lidar>
       </sensor>
+      <sensor name="camera" type="camera">
+        <pose>0.52 0 0.40 0 0 0</pose><topic>/camera/image_raw</topic><update_rate>15</update_rate><always_on>true</always_on>
+        <gz_frame_id>camera_optical_frame</gz_frame_id>
+        <camera><horizontal_fov>1.2</horizontal_fov><image><width>640</width><height>480</height><format>R8G8B8</format></image><clip><near>0.1</near><far>20</far></clip></camera>
+      </sensor>
+      <sensor name="depth" type="depth_camera">
+        <pose>0.52 0 0.40 0 0 0</pose><topic>/camera/depth</topic><update_rate>15</update_rate><always_on>true</always_on>
+        <gz_frame_id>camera_optical_frame</gz_frame_id>
+        <camera><horizontal_fov>1.2</horizontal_fov><image><width>320</width><height>240</height><format>R_FLOAT32</format></image><clip><near>0.3</near><far>10</far></clip></camera>
+      </sensor>
+      <sensor name="imu" type="imu">
+        <pose>0 0 0.10 0 0 0</pose><topic>/imu</topic><update_rate>100</update_rate><always_on>true</always_on>
+        <gz_frame_id>imu_link</gz_frame_id>
+      </sensor>
     </link>
     <link name="left_wheel">
       <pose>0 0.33 0 -1.5707963 0 0</pose>
