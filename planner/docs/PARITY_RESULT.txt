@@ -1,0 +1,1 @@
+50 maps: 40 planned by both, 10 unreachable for both, 0 mismatches, 0 found by the search but rejected when building poses, max length difference 3.55e-15 m, 313 s

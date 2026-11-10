@@ -1,4 +1,4 @@
-# Planner specification (task 3.1), draft 1, November 6, 2026
+# Planner specification (task 3.1), draft 4, November 8, 2026
 
 Purpose: one page that says what the planner must do, so tests can say pass or fail. Targets marked "proposed" are my starting values. Values marked "(find out)" need a measurement or a fact from you.
 
@@ -7,7 +7,7 @@ Purpose: one page that says what the planner must do, so tests can say pass or f
 |---|---|---|
 | Footprint | rectangle 1120 x 810 mm (measured), centered on the planning point | your notes |
 | Drive | skid-steer, can rotate in place | (find out: confirm on the real rover) |
-| Max speed, max turn rate | (find out) | |
+| Max speed, max turn rate | planning placeholder 0.8 m/s and 0.8 rad/s (no MEGA datasheet number found; read it off the rover manual or measure in task 2.2) | placeholder |
 | Where the planning point sits on the body | footprint center | you confirmed |
 
 ## 2. Inputs and outputs
@@ -30,6 +30,24 @@ Purpose: one page that says what the planner must do, so tests can say pass or f
 | Success rate on reachable trips (corridor world, 0.81 m width) | proposed at least 85% | 51 of 56 = 91% |
 | Latency, 80 corridor queries | proposed under 100 ms median on the rover computer | cloud machine: median 101 ms (was 150 ms), slowest 5 s on unreachable goals; rover computer not yet measured |
 | Same input, same output | identical path on repeat runs | passed (unit test, also after a failed query in between) |
+
+## 4b. Pass/fail against the stock planners (the numbers task 3.10 must meet)
+Stock planners = NavFn, SmacPlanner2D, SmacPlannerHybrid, ThetaStar, run with the same 1.12 x 0.81 m footprint and the same maps. Paths from a point or circle planner are checked on the true rectangle, so a path that clips a wall counts as a failure.
+
+| Axis | Our planner passes if | Why this number |
+|---|---|---|
+| Valid paths (0 collisions on the true footprint) | 100% of returned paths | a returned path must be safe, no exceptions |
+| Success on reachable trips | at least the best stock planner's rate, and at least 85% | stock circle planners refuse or clip at doors |
+| Doors 0.85 to 1.32 m | passes every one; blocks every gap of 0.80 m and narrower | rover is 0.81 m wide, margin 2 cm |
+| Path length | within 10% of the shortest valid stock path | no long detours for safety |
+| Minimum clearance | at least 2 cm on every path | the planning margin |
+| Planning time | median under 100 ms and 95th percentile under 500 ms on the rover computer | replanning around people needs fast answers |
+| Repeatability | identical output on identical input | testing and debugging |
+
+Decision gate (from the syllabus): if we beat no stock planner on any axis, the write-up says so and reports the benchmark and plugin as the contribution.
+
+## 4c. Status of the spec itself
+Written after the first design experiment (3.2), not before it, because this project started the planner in simulation first. The numbers above were set from the measured footprint and door survey, not from our own results.
 
 ## 5. Motion
 Forward, reverse and turning in place. Reverse has a cost penalty so the planner prefers forward when it is about equal. Other motion models (for example car-like vehicles) are for later and are not part of this spec.

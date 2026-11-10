@@ -34,7 +34,9 @@ bool plan_se2(World& w, double sx, double sy, double sth, double gx, double gy, 
   using QE = std::pair<float, int>; std::priority_queue<QE, std::vector<QE>, std::greater<QE>> pq;
   int it0 = bin(sth); double th0 = it0 * (2 * PI / NT);
   if (w.rect_hits(sx, sy, th0)) { // start heading bin collides: try all bins
-    bool found = false; for (int q = 0; q < NT && !found; q++) if (!w.rect_hits(sx, sy, q * (2 * PI / NT))) { it0 = q; th0 = q * (2 * PI / NT); found = true; }
+    // take the free heading bin closest to the requested one (ties: counter-clockwise first)
+    bool found = false; int base = it0; for (int dq = 1; dq <= NT / 2 && !found; dq++) for (int sg = 1; sg >= -1 && !found; sg -= 2) {
+      int q = ((base + sg * dq) % NT + NT) % NT; if (!w.rect_hits(sx, sy, q * (2 * PI / NT))) { it0 = q; th0 = q * (2 * PI / NT); found = true; } }
     if (!found) return false; }
   nodes.push_back({sx, sy, th0, 0.f, -1, it0}); closed.push_back(0); best[key(sx, sy, it0)] = 0; touched.push_back(key(sx, sy, it0)); pq.push({H0(sx, sy), 0});
   int goal_node = -1; double dth = 2 * PI / NT;
