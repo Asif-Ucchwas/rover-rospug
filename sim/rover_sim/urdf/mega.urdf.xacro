@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!-- Rover Robotics MEGA, task 1.1. Frames: base_footprint (on the floor, planning point) -> base_link (axle height) -> wheels, lidar, camera.
+     Footprint 1.12 x 0.81 m (measured, includes wheels) is the number the planner uses. Mount positions marked (measure) are guesses
+     from lab photos and change in task 2.4. Mass and inertia are placeholders. -->
+<robot name="rover_mega" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="L" value="1.12"/>          <!-- footprint length, m -->
+  <xacro:property name="Wd" value="0.81"/>         <!-- footprint width, m -->
+  <xacro:property name="wheel_r" value="0.15"/>
+  <xacro:property name="wheel_w" value="0.10"/>
+  <xacro:property name="wx" value="0.40"/>         <!-- wheel x offset from centre (measure) -->
+  <xacro:property name="wy" value="0.335"/>        <!-- wheel y offset from centre -->
+  <xacro:property name="line" value="0.03"/>       <!-- footprint outline line width -->
+
+  <material name="orange"><color rgba="0.95 0.45 0.10 1"/></material>
+  <material name="dark"><color rgba="0.08 0.08 0.08 1"/></material>
+  <material name="steel"><color rgba="0.7 0.7 0.7 1"/></material>
+  <material name="outline"><color rgba="0.1 0.8 0.2 0.9"/></material>
+
+  <link name="base_footprint"/>
+  <joint name="footprint_joint" type="fixed"><parent link="base_footprint"/><child link="base_link"/><origin xyz="0 0 ${wheel_r}" rpy="0 0 0"/></joint>
+
+  <link name="base_link">
+    <visual><origin xyz="0 0 0.12"/><geometry><box size="1.00 0.70 0.14"/></geometry><material name="orange"/></visual>
+    <visual><origin xyz="0.53 0 0.06"/><geometry><box size="0.05 0.66 0.08"/></geometry><material name="dark"/></visual>
+    <visual><origin xyz="-0.53 0 0.06"/><geometry><box size="0.05 0.66 0.08"/></geometry><material name="dark"/></visual>
+    <collision><origin xyz="0 0 0.10"/><geometry><box size="${L} ${Wd} 0.30"/></geometry></collision>
+    <inertial><mass value="60"/><origin xyz="0 0 0.10"/><inertia ixx="3.41" iyy="6.5" izz="9.0" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+
+  <xacro:macro name="wheel" params="name x y">
+    <link name="${name}_wheel">
+      <visual><origin rpy="${pi/2} 0 0"/><geometry><cylinder radius="${wheel_r}" length="${wheel_w}"/></geometry><material name="dark"/></visual>
+      <collision><origin rpy="${pi/2} 0 0"/><geometry><cylinder radius="${wheel_r}" length="${wheel_w}"/></geometry></collision>
+      <inertial><mass value="3"/><inertia ixx="0.0194" iyy="0.0338" izz="0.0194" ixy="0" ixz="0" iyz="0"/></inertial>
+    </link>
+    <joint name="${name}_wheel_joint" type="continuous">
+      <parent link="base_link"/><child link="${name}_wheel"/><origin xyz="${x} ${y} 0"/><axis xyz="0 1 0"/>
+    </joint>
+  </xacro:macro>
+  <xacro:wheel name="front_left"  x="${wx}"  y="${wy}"/>
+  <xacro:wheel name="front_right" x="${wx}"  y="${-wy}"/>
+  <xacro:wheel name="rear_left"   x="${-wx}" y="${wy}"/>
+  <xacro:wheel name="rear_right"  x="${-wx}" y="${-wy}"/>
+
+  <!-- 3D lidar (SICK multiScan) on the top plate. Position (measure) -->
+  <link name="lidar_link">
+    <visual><origin xyz="0 0 -0.18"/><geometry><cylinder radius="0.03" length="0.36"/></geometry><material name="dark"/></visual>
+    <visual><geometry><cylinder radius="0.06" length="0.08"/></geometry><material name="dark"/></visual>
+  </link>
+  <joint name="lidar_joint" type="fixed"><parent link="base_link"/><child link="lidar_link"/><origin xyz="0.48 0 0.55"/></joint>
+
+  <!-- Depth camera (RealSense, model to confirm) on the bar under the lidar. Position (measure). camera_link: x forward; optical frame: z forward -->
+  <link name="camera_link"><visual><geometry><box size="0.03 0.09 0.025"/></geometry><material name="steel"/></visual></link>
+  <joint name="camera_joint" type="fixed"><parent link="base_link"/><child link="camera_link"/><origin xyz="0.52 0 0.40"/></joint>
+  <link name="camera_optical_frame"/>
+  <joint name="camera_optical_joint" type="fixed"><parent link="camera_link"/><child link="camera_optical_frame"/><origin rpy="${-pi/2} 0 ${-pi/2}"/></joint>
+
+  <!-- IMU (BNO-055) inside the body. Position (measure) -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed"><parent link="base_link"/><child link="imu_link"/><origin xyz="0 0 0.10"/></joint>
+
+  <!-- Footprint outline: four thin green strips on the floor showing the 1.12 x 0.81 m rectangle the planner uses -->
+  <link name="footprint_outline">
+    <visual><origin xyz="${L/2} 0 0"/><geometry><box size="${line} ${Wd} 0.004"/></geometry><material name="outline"/></visual>
+    <visual><origin xyz="${-L/2} 0 0"/><geometry><box size="${line} ${Wd} 0.004"/></geometry><material name="outline"/></visual>
+    <visual><origin xyz="0 ${Wd/2} 0"/><geometry><box size="${L} ${line} 0.004"/></geometry><material name="outline"/></visual>
+    <visual><origin xyz="0 ${-Wd/2} 0"/><geometry><box size="${L} ${line} 0.004"/></geometry><material name="outline"/></visual>
+  </link>
+  <joint name="outline_joint" type="fixed"><parent link="base_footprint"/><child link="footprint_outline"/><origin xyz="0 0 0.003"/></joint>
+</robot>
