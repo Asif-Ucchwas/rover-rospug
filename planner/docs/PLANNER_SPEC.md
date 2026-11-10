@@ -1,4 +1,4 @@
-# Planner specification (task 3.1), draft 4, November 8, 2026
+# Planner specification (task 3.1), draft 5, November 10, 2026
 
 Purpose: one page that says what the planner must do, so tests can say pass or fail. Targets marked "proposed" are my starting values. Values marked "(find out)" need a measurement or a fact from you.
 
@@ -28,7 +28,7 @@ Purpose: one page that says what the planner must do, so tests can say pass or f
 | Every returned path, validated on the true footprint at 5 mm and 0.25 degrees | 0 collisions | passed on 80 corridor trips |
 | Door gaps | finds a path through gaps of 0.85 m and wider (rover width 0.81 m); gaps of 0.80 m and narrower are correctly blocked, 0.85 m passes with the 2 cm margin | passed (gap sweep, 0.70 to 1.50 m) |
 | Success rate on reachable trips (corridor world, 0.81 m width) | proposed at least 85% | 51 of 56 = 91% |
-| Latency, 80 corridor queries | proposed under 100 ms median on the rover computer | cloud machine: median 101 ms (was 150 ms), slowest 5 s on unreachable goals; rover computer not yet measured |
+| Latency, 80 fixed corridor queries (py/bench_latency.py) | proposed under 100 ms median and under 500 ms at the 95th percentile | cloud machine, lattice 9 cm / 24 headings / 0.30 m step: queries that find a path median 53 ms, p95 301 ms, slowest 387 ms; all 80 queries median 31 ms, p95 351 ms. Proving that no path exists can take up to 1.7 s (24 of the 80 queries have none). Rover computer not yet measured. |
 | Same input, same output | identical path on repeat runs | passed (unit test, also after a failed query in between) |
 
 ## 4b. Pass/fail against the stock planners (the numbers task 3.10 must meet)
@@ -46,7 +46,10 @@ Stock planners = NavFn, SmacPlanner2D, SmacPlannerHybrid, ThetaStar, run with th
 
 Decision gate (from the syllabus): if we beat no stock planner on any axis, the write-up says so and reports the benchmark and plugin as the contribution.
 
-## 4c. Status of the spec itself
+## 4c. Lattice settings chosen for latency (task 3.9)
+Swept 13 settings of lattice cell size, heading count and step length on the 80 queries. Chosen: 9 cm cells, 24 headings, 0.30 m step. It keeps every path the old settings found (56 of 56), 0 collisions on the true footprint, worst path 6.8% longer than the old settings, median 0.7% longer, door gaps unchanged (0.80 m and narrower blocked, 0.85 m and wider pass), and was about 3 times faster on the median and 4 times on the 95th percentile. Settings that were faster still (10 cm cells, 16 headings) lost 3 paths or clipped a wall.
+
+## 4d. Status of the spec itself
 Written after the first design experiment (3.2), not before it, because this project started the planner in simulation first. The numbers above were set from the measured footprint and door survey, not from our own results.
 
 ## 5. Motion
