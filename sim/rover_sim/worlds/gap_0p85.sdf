@@ -36,7 +36,7 @@
       <link name="l"><collision name="c"><geometry><box><size>0.100 9.800 2.0</size></box></geometry></collision>
       <visual name="v"><geometry><box><size>0.100 9.800 2.0</size></box></geometry>
       <material><ambient>0.75 0.75 0.78 1</ambient><diffuse>0.75 0.75 0.78 1</diffuse></material></visual></link></model>
-    <model name="rover"><pose>3.0 5.0 0.15 0 0 0.0</pose>
+    <model name="rover"><pose>3.0 5.025 0.15 0 0 0.0</pose>
     <link name="base_link">
       <inertial><mass>60</mass><inertia><ixx>3.41</ixx><iyy>6.5</iyy><izz>9.0</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
       <collision name="chassis"><pose>0 0 0.10 0 0 0</pose><geometry><box><size>1.12 0.81 0.30</size></box></geometry></collision>

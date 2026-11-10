@@ -68,7 +68,10 @@ def main():
     out = os.path.join(PKG, 'worlds'); os.makedirs(out, exist_ok=True)
     for gap in (0.70, 0.80, 0.85, 0.90, 1.20, 1.32):
         name = 'gap_%s' % ('%.2f' % gap).replace('.', 'p')
-        open(os.path.join(out, name + '.sdf'), 'w').write(world_sdf(gap_world(gap), name, (3.0, 5.0, 0.0)))
+        g = gap_world(gap)
+        rows = [j for j in range(1, g.shape[0] - 1) if g[j, int(10.0 / RES)] == 0]   # free cells in the wall column = the opening
+        yc = (min(rows) + max(rows) + 1) * RES / 2                                     # true centre of the opening on the 5 cm grid
+        open(os.path.join(out, name + '.sdf'), 'w').write(world_sdf(g, name, (3.0, yc, 0.0)))
     open(os.path.join(out, 'corridor.sdf'), 'w').write(world_sdf(corridor_world(0), 'corridor', (3.0, 7.2, 0.0)))
     print('worlds written to', out)
 
