@@ -22,7 +22,7 @@ _lib.fpp_plan.argtypes = [P, C.c_int, C.c_int, D, D, D, D, D, D, C.c_void_p, C.c
 METHODS = {'point_circ': 0, 'point_insc': 1, 'theta_rect': 2, 'se2': 3, 'rrt': 4, 'rrt_corr': 5, 'rrt_corr_fb': 6}
 # defaults: se2 cell, theta bins, step, w_rot, reverse penalty, goal tol, max nodes, time limit s
 # ... then RRT*: iterations, corridor half-width m, rewire radius m, goal bias, rng seed
-DEFAULT_PRM = [0.05, 32, 0.20, 0.5, 1.5, 0.15, 3e6, 30.0, 0.0, 2000, 2.0, 2.0, 0.05, 1]
+DEFAULT_PRM = [0.09, 24, 0.30, 0.5, 1.5, 0.15, 3e6, 30.0, 0.0, 2000, 2.0, 2.0, 0.05, 1]
 ROBOT = dict(a=0.56, b=0.405)   # Rover MEGA measured 1120 x 810 mm (vendor spec 1100 x 770)
 
 

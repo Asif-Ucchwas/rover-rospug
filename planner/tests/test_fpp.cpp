@@ -18,7 +18,7 @@ int fpp_plan(void*, int, int, double, double, double, double, double, double, co
 namespace {
 const double RES = 0.05, A = 0.56, B = 0.405;
 const int W = 400, H = 200;
-const double PRM[14] = {0.05, 32, 0.20, 0.5, 1.5, 0.15, 3e6, 30.0, 0.0, 2000, 2.0, 2.0, 0.05, 1};
+const double PRM[14] = {0.09, 24, 0.30, 0.5, 1.5, 0.15, 3e6, 30.0, 0.0, 2000, 2.0, 2.0, 0.05, 1};
 
 // Outer walls plus a vertical wall at x = 10 m with a door of the given width centred at y = 5 m.
 std::vector<uint8_t> world(double door) {
