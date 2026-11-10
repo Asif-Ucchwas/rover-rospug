@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Runs the door-gap test in Gazebo, headless, one world at a time. Needs: colcon build done and install/setup.bash sourced.
-# Rover is 0.77 m wide: a 0.70 m gap must block it, 0.90 m and 1.20 m must let it through.
+# Rover is 0.81 m wide: 0.70 m and 0.80 m gaps must block it; 0.85, 0.90, 1.20 and 1.32 m (lab door, both leaves) must let it through.
 set -u
-declare -A EXPECT=( [gap_0p70]=block [gap_0p80]=any [gap_0p90]=pass [gap_1p20]=pass )
+declare -A EXPECT=( [gap_0p70]=block [gap_0p80]=block [gap_0p85]=pass [gap_0p90]=pass [gap_1p20]=pass [gap_1p32]=pass )
 fail=0
-for w in gap_0p70 gap_0p80 gap_0p90 gap_1p20; do
+for w in gap_0p70 gap_0p80 gap_0p85 gap_0p90 gap_1p20 gap_1p32; do
   echo "=== $w (expect ${EXPECT[$w]}) ==="
   ros2 launch rover_sim sim.launch.py world:=$w headless:=true > /tmp/rover_sim_$w.log 2>&1 &
   LP=$!; sleep 12

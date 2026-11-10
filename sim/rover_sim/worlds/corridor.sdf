@@ -285,7 +285,7 @@
         <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface></collision>
       <visual name="v"><geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
         <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
-      <visual name="hub"><pose>0 0 0.055</pose><geometry><cylinder><radius>0.07</radius><length>0.01</length></cylinder></geometry><material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      <visual name="hub"><pose>0 0 0.055 0 0 0</pose><geometry><cylinder><radius>0.07</radius><length>0.01</length></cylinder></geometry><material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
     </link>
     <link name="right_wheel">
       <pose>0 -0.33 0 -1.5707963 0 0</pose>
@@ -294,7 +294,7 @@
         <surface><friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction></surface></collision>
       <visual name="v"><geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
         <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
-      <visual name="hub"><pose>0 0 -0.055</pose><geometry><cylinder><radius>0.07</radius><length>0.01</length></cylinder></geometry><material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      <visual name="hub"><pose>0 0 -0.055 0 0 0</pose><geometry><cylinder><radius>0.07</radius><length>0.01</length></cylinder></geometry><material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
     </link>
     <joint name="left_wheel_joint" type="revolute"><parent>base_link</parent><child>left_wheel</child>
       <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
@@ -309,6 +309,11 @@
       <max_angular_velocity>1.5</max_angular_velocity><min_angular_velocity>-1.5</min_angular_velocity>
     </plugin>
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher"><topic>/joint_states</topic></plugin>
+    <!-- ground truth: the physics engine's true pose of the rover (the diff-drive /odom only adds up wheel speed, so it reads 12 m even when the rover is stuck on a wall) -->
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>world</odom_frame><robot_base_frame>base_link</robot_base_frame><odom_topic>/ground_truth</odom_topic>
+      <tf_topic>/ground_truth_tf</tf_topic><odom_publish_frequency>30</odom_publish_frequency><dimensions>3</dimensions>
+    </plugin>
   </model>
   </world>
 </sdf>
